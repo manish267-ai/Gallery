@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MediaStore Gallery</title>
+  <style>
+    :root {
+      --bg: #09090b;
+      --surface: #121215;
+      --surface-elevated: #1c1c21;
+      --border: #27272a;
+      --text: #fafafa;
+      --text-muted: #a1a1aa;
+      --accent: #e4e4e7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 80px;
+      overflow-x: hidden;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(9, 9, 11, 0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+    }
+    .status-pill {
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .status-pill.live {
+      color: #4ade80;
+      border-color: rgba(74, 222, 128, 0.3);
+    }
+    .toolbar {
+      padding: 12px 16px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+    }
+    .search-input {
+      flex: 1;
+      min-width: 180px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      outline: none;
+    }
+    .btn {
+      background: var(--surface-elevated);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn.active {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+    main { padding: 12px 16px; }
+    .section-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin: 16px 0 8px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+      gap: 6px;
+    }
+    .card {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      background: var(--surface);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .card img, .card video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .badge {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
+      font-size: 0.68rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .albums-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .album-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .album-cover {
+      aspect-ratio: 1 / 1;
+      background: var(--surface-elevated);
+      width: 100%;
+      object-fit: cover;
+    }
+    .album-info {
+      padding: 10px;
+    }
+    .album-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .album-count {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(18, 18, 21, 0.94);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      z-index: 30;
+    }
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 18px;
+      border-radius: 999px;
+    }
+    .nav-btn.active {
+      color: var(--bg);
+      background: var(--text);
+    }
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.96);
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox-top {
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .lightbox-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 10px;
+    }
+    .lightbox-body img, .lightbox-body video {
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+    }
+    .lightbox-meta {
+      padding: 12px 16px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span>MediaStore Gallery</span>
+    </div>
+    <div id="statusPill" class="status-pill">Checking Bridge...</div>
+  </header>
+
+  <div class="toolbar">
+    <input type="text" id="searchInput" class="search-input" placeholder="Search photos, videos, albums..." />
+    <button class="btn active" data-filter="all">All</button>
+    <button class="btn" data-filter="image">Photos</button>
+    <button class="btn" data-filter="video">Videos</button>
+    <button class="btn" id="refreshBtn">Rescan</button>
+  </div>
+
+  <main id="mainContainer"></main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="timeline">Timeline</button>
+    <button class="nav-btn" data-tab="albums">Albums</button>
+  </nav>
+
+  <div id="lightbox" class="lightbox">
+    <div class="lightbox-top">
+      <div id="lbTitle" style="font-weight:600;font-size:0.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+      <button class="btn" id="closeLbBtn">Close</button>
+    </div>
+    <div class="lightbox-body" id="lbBody"></div>
+    <div class="lightbox-meta" id="lbMeta"></div>
+  </div>
+
+  <script>
+    let mediaItems = [];
+    let currentTab = 'timeline';
+    let currentFilter = 'all';
+    let currentAlbum = null;
+    let searchQuery = '';
+
+    const statusPill = document.getElementById('statusPill');
+    const mainContainer = document.getElementById('mainContainer');
+    const searchInput = document.getElementById('searchInput');
+
+    function loadMediaStore() {
+      if (window.AndroidMediaStore && typeof window.AndroidMediaStore.getAllMediaJson === 'function') {
+        try {
+          const raw = window.AndroidMediaStore.getAllMediaJson();
+          const parsed = JSON.parse(raw);
+          mediaItems = parsed.map(item => ({
+            id: item._id,
+            name: item.display_name || ('Media_' + item._id),
+            album: item.bucket_display_name || 'Internal Storage',
+            mime: item.mime_type || 'image/jpeg',
+            size: item.size || 0,
+            dateAdded: (item.date_added || 0) * 1000,
+            width: item.width || 0,
+            height: item.height || 0,
+            duration: item.duration || 0,
+            path: item.relative_path || 'DCIM/',
+            uri: item.uri,
+            thumbUri: item.thumb_uri || item.uri
+          }));
+          statusPill.textContent = 'MediaStore Live (' + mediaItems.length + ')';
+          statusPill.classList.add('live');
+        } catch (err) {
+          statusPill.textContent = 'Bridge Error';
+        }
+      } else {
+        statusPill.textContent = 'Browser Preview Mode';
+      }
+      render();
+    }
+
+    function getFilteredItems() {
+      return mediaItems.filter(item => {
+        if (currentAlbum && item.album !== currentAlbum) return false;
+        if (currentFilter === 'image' && !item.mime.startsWith('image')) return false;
+        if (currentFilter === 'video' && !item.mime.startsWith('video')) return false;
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return item.name.toLowerCase().includes(q) || item.album.toLowerCase().includes(q);
+        }
+        return true;
+      });
+    }
+
+    function formatDuration(sec) {
+      if (!sec || sec <= 0) return 'VIDEO';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    function render() {
+      mainContainer.innerHTML = '';
+
+      if (currentTab === 'albums' && !currentAlbum) {
+        const albumsMap = new Map();
+        mediaItems.forEach(item => {
+          if (!albumsMap.has(item.album)) {
+            albumsMap.set(item.album, { count: 0, cover: item.thumbUri });
+          }
+          albumsMap.get(item.album).count++;
+        });
+
+        const grid = document.createElement('div');
+        grid.className = 'albums-grid';
+        albumsMap.forEach((info, albumName) => {
+          const card = document.createElement('div');
+          card.className = 'album-card';
+          card.innerHTML = `
+            <img class="album-cover" src="${info.cover}" loading="lazy" />
+            <div class="album-info">
+              <div class="album-name">${albumName}</div>
+              <div class="album-count">${info.count} items</div>
+            </div>
+          `;
+          card.onclick = () => {
+            currentAlbum = albumName;
+            render();
+          };
+          grid.appendChild(card);
+        });
+        mainContainer.appendChild(grid);
+        return;
+      }
+
+      if (currentAlbum) {
+        const backBtn = document.createElement('button');
+        backBtn.className = 'btn';
+        backBtn.style.marginBottom = '12px';
+        backBtn.textContent = '← Back to Albums (' + currentAlbum + ')';
+        backBtn.onclick = () => { currentAlbum = null; render(); };
+        mainContainer.appendChild(backBtn);
+      }
+
+      const items = getFilteredItems();
+      if (items.length === 0) {
+        const empty = document.createElement('div');
+        empty.style.padding = '40px 16px';
+        empty.style.textAlign = 'center';
+        empty.style.color = 'var(--text-muted)';
+        empty.textContent = 'No media found. Grant storage permission if prompted.';
+        mainContainer.appendChild(empty);
+        return;
+      }
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const isVideo = item.mime.startsWith('video');
+        card.innerHTML = `
+          <img src="${item.thumbUri}" loading="lazy" alt="${item.name}" />
+          ${isVideo ? `<span class="badge">▶ ${formatDuration(item.duration)}</span>` : ''}
+        `;
+        card.onclick = () => openLightbox(item);
+        grid.appendChild(card);
+      });
+      mainContainer.appendChild(grid);
+    }
+
+    function openLightbox(item) {
+      const lb = document.getElementById('lightbox');
+      const lbTitle = document.getElementById('lbTitle');
+      const lbBody = document.getElementById('lbBody');
+      const lbMeta = document.getElementById('lbMeta');
+
+      lbTitle.textContent = item.name;
+      lbBody.innerHTML = '';
+
+      if (item.mime.startsWith('video')) {
+        const vid = document.createElement('video');
+        vid.src = item.uri;
+        vid.controls = true;
+        vid.autoplay = true;
+        lbBody.appendChild(vid);
+      } else {
+        const img = document.createElement('img');
+        img.src = item.uri;
+        lbBody.appendChild(img);
+      }
+
+      const sizeMb = (item.size / (1024 * 1024)).toFixed(2);
+      lbMeta.innerHTML = `
+        <div><strong>Album:</strong> ${item.album} (${item.path})</div>
+        <div><strong>Type:</strong> ${item.mime} • <strong>Size:</strong> ${sizeMb} MB • <strong>ID:</strong> ${item.id}</div>
+      `;
+      lb.classList.add('open');
+    }
+
+    document.getElementById('closeLbBtn').onclick = () => {
+      document.getElementById('lbBody').innerHTML = '';
+      document.getElementById('lightbox').classList.remove('open');
+    };
+
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        render();
+      };
+    });
+
+    document.querySelectorAll('[data-tab]').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentTab = btn.dataset.tab;
+        currentAlbum = null;
+        render();
+      };
+    });
+
+    searchInput.oninput = (e) => {
+      searchQuery = e.target.value;
+      render();
+    };
+
+    document.getElementById('refreshBtn').onclick = () => loadMediaStore();
+
+    window.addEventListener('DOMContentLoaded', loadMediaStore);
+  </script>
+</body>
+</html>
