@@ -200,3 +200,26 @@ class MainActivity : Activity() {
         }
     }
 }
+inner class AppBridge {
+    @JavascriptInterface
+    fun getAllMediaJson(): String {
+        // ... (your existing media fetch code) ...
+        return jsonArray.toString()
+    }
+
+    // 🟢 Add this delete function right here!
+    @JavascriptInterface
+    fun deleteMedia(idString: String): Boolean {
+        return try {
+            val id = idString.toLong()
+            val contentUri = ContentUris.withAppendedId(
+                MediaStore.Files.getContentUri("external"), id
+            )
+            // Tells Android OS to wipe the file from storage and MediaStore
+            contentResolver.delete(contentUri, null, null) > 0
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+}
