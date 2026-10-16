@@ -3,6 +3,35 @@ package com.example.mediastoregallery
 import android.Manifest
 import android.app.Activity
 import android.content.ContentUris
+import android.provider.MediaStore
+import android.webkit.JavascriptInterface
+
+class WebAppInterface(private val activity: Activity) {
+
+    @JavascriptInterface
+    fun deleteMedia(id: String): Boolean {
+        val uri = ContentUris.withAppendedId(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, 
+            id.toLong()
+        )
+        return try {
+            val rowsDeleted = activity.contentResolver.delete(uri, null, null)
+            rowsDeleted > 0
+        } catch (e: android.app.RecoverableSecurityException) {
+            // Android 16 requires user consent via PendingIntent for deleting items owned by other apps
+            val intentSender = e.userAction.actionIntent.intentSender
+            activity.startIntentSenderForResult(intentSender, DELETE_REQUEST_CODE, null, 0, 0, 0)
+            false
+        } catch (e: SecurityException) {
+            false
+        }
+    }
+
+    companion object {
+        const val DELETE_REQUEST_CODE = 1001
+    }
+}
+
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
