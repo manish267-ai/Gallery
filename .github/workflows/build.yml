@@ -71,11 +71,11 @@ jobs:
           }
 
           android {
-              namespace 'com.example.mediastoregallery'
+              namespace 'com.gallery.app'
               compileSdk 34
 
               defaultConfig {
-                  applicationId "com.example.mediastoregallery"
+                  applicationId "com.gallery.app"
                   minSdk 24
                   targetSdk 34
                   versionCode 1
@@ -128,7 +128,7 @@ jobs:
           # Create MainActivity.kt if not already uploaded
           if [ ! -f "app/src/main/java/com/example/mediastoregallery/MainActivity.kt" ]; then
           cat << 'EOF' > app/src/main/java/com/example/mediastoregallery/MainActivity.kt
-          package com.example.mediastoregallery
+          package com.gallery.app
 
           import android.Manifest
           import android.app.Activity
