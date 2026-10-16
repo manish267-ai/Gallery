@@ -1,4 +1,4 @@
-package com.example.mediastoregallery
+package com.gallery.app
 
 import android.Manifest
 import android.app.Activity
