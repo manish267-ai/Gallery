@@ -632,14 +632,19 @@
       closeContextMenu();
       try {
         if (window.AndroidMediaStore && typeof window.AndroidMediaStore.deleteMedia === 'function') {
-          const result = window.AndroidMediaStore.deleteMedia(String(item.id));
-          if (result === false) { alert('Android did not delete this file.'); return; }
+          // Pass both ID and mime type correctly to Kotlin bridge
+          const result = window.AndroidMediaStore.deleteMedia(String(item.id), item.mime);
+          if (result === false) { 
+            alert('Android requested permission or could not delete this file. If a system prompt appeared, please try deleting again after allowing.'); 
+            return; 
+          }
           mediaItems = mediaItems.filter(x => x.id !== item.id);
         } else {
           alert('This HTML app has no Android delete bridge. The file cannot be deleted from device storage yet.');
           return;
         }
-      } catch (e) { alert('Delete failed. The Android app needs to expose a deleteMedia(id) bridge.'); return; }
+      } catch (e) { alert('Delete failed: ' + e.message); return; }
+      
       if (document.getElementById('lightbox').classList.contains('open')) {
         viewerItems = viewerItems.filter(x => x.id !== item.id);
         if (!viewerItems.length) closeViewer(); else { viewerIndex = Math.min(viewerIndex, viewerItems.length - 1); showViewerItem(); }

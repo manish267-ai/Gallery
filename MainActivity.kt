@@ -199,14 +199,17 @@ class MainActivity : Activity() {
             return jsonArray.toString()
         }
 
-        // 🗑️ Fully equipped delete function with Android security fallback
+        // 🗑️ Fully corrected delete bridge accepting ID and MIME type for Scoped Storage
         @JavascriptInterface
-        fun deleteMedia(idString: String): Boolean {
+        fun deleteMedia(idString: String, mime: String): Boolean {
             return try {
                 val id = idString.toLong()
-                val contentUri = ContentUris.withAppendedId(
-                    MediaStore.Files.getContentUri("external"), id
-                )
+                val baseUri = if (mime.startsWith("video")) {
+                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                } else {
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                }
+                val contentUri = ContentUris.withAppendedId(baseUri, id)
                 contentResolver.delete(contentUri, null, null) > 0
             } catch (e: android.app.RecoverableSecurityException) {
                 try {
