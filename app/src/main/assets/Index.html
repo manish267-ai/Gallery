@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Gallery</title>
+  <style>
+    @font-face {
+      font-family: 'CustomFont';
+      src: url('data:application/font-woff2;charset=utf-8;base64,d09GRgABAAAAA...');
+    }
+    :root {
+      --bg: #000000;
+      --surface: #121215;
+      --surface-elevated: #1c1c21;
+      --border: #27272a;
+      --text: #fafafa;
+      --text-muted: #a1a1aa;
+      --accent: #e4e4e7;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 80px;
+      overflow-x: hidden;
+    }
+    header {
+      position: relative;
+      z-index: 20;
+      background: transparent;
+      backdrop-filter: none;
+      box-shadow: none;
+      border: none;
+      padding: 8px 20px 20px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .brand {transform: translateY(17px);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      font-weight: 700;
+      font-size: 1.8rem;
+      letter-spacing: -0.03em;
+      font-family: 'CustomFont', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .toolbar {
+      padding: 25px 20px 12px 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 180px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 11px 14px;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      outline: none;
+    }
+    .btn {
+      background: var(--surface-elevated);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+    }
+    .btn.icon-btn {
+      padding: 10px;
+      width: 42px;
+      height: 42px;
+      gap: 0;
+    }
+    .btn.active {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+    main { padding: 8px 16px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+      gap: 6px;
+    }
+    .card {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      background: var(--surface);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .card img, .card video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .badge {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
+      font-size: 0.68rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .albums-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .album-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .album-card:active {
+      transform: scale(0.97);
+    }
+    .album-cover {
+      aspect-ratio: 1 / 1;
+      background: var(--surface-elevated);
+      width: 100%;
+      object-fit: cover;
+    }
+    .album-info {
+      padding: 10px;
+    }
+    .album-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .album-count {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: transparent;
+      backdrop-filter: none;
+      border-top: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      z-index: 30;
+      pointer-events: none;
+    }
+    .nav-btn {
+      box-sizing: border-box;
+      width: 120px;
+      height: 44px;
+      flex: 0 0 120px;
+      background: #171719;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0 12px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      pointer-events: auto;
+    }
+    .nav-btn.active {
+      color: var(--bg);
+      background: var(--text);
+    }
+    .lightbox {
+      position: fixed; inset: 0; background: #000; z-index: 50;
+      display: none; flex-direction: column; overflow: hidden; touch-action: none;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox-top { position:absolute; top:0; left:0; right:0; z-index:3; padding:14px 16px; display:flex; justify-content:space-between; align-items:center; background:linear-gradient(#000b, transparent); }
+    .lightbox-body { flex:1; min-height:0; width:100%; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:0; touch-action:none; position:relative; }
+    .lightbox-body img, .lightbox-body video { width:100%; height:100%; max-width:none; max-height:none; object-fit:contain; display:block; transform-origin:center center; }
+    .lightbox-body img { transition: transform .22s ease; will-change:transform; }
+    .lightbox-meta { display:none; padding:10px 16px; background:#111; font-size:.78rem; color:var(--text-muted); line-height:1.5; }
+    .viewer-actions { display:flex; justify-content:space-around; align-items:center; gap:6px; padding:12px 8px calc(12px + env(safe-area-inset-bottom)); background:#101010; border-top:1px solid #292929; z-index:3; }
+    .viewer-actions button { border:0; background:transparent; color:#f5f5f5; min-width:54px; padding:8px 6px; font-size:.72rem; display:flex; flex-direction:column; align-items:center; gap:5px; cursor: pointer; }
+    .viewer-actions button svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .viewer-actions button.danger-action { color: var(--danger); }
+    
+    /* Stylish Floating Context Menu */
+    .context-menu { 
+      position: fixed; z-index: 100; inset: 0; display: none; 
+      align-items: flex-end; background: rgba(0, 0, 0, 0.6); 
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      opacity: 0; transition: opacity 0.25s ease;
+    }
+    .context-menu.open { display: flex; opacity: 1; }
+    .context-sheet { 
+      width: 100%; background: #17171d; border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px 24px 0 0; padding: 20px 16px calc(24px + env(safe-area-inset-bottom)); 
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+      transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .context-menu.open .context-sheet { transform: translateY(0); }
+    .context-sheet-indicator {
+      width: 36px; height: 4px; background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px; margin: 0 auto 16px auto;
+    }
+    .context-sheet h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); text-align: center;}
+    .context-options-group {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden; margin-bottom: 10px;
+    }
+    .context-sheet button { 
+      display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; 
+      padding: 13px 16px; border: 0; border-bottom: 1px solid var(--border); color: #f5f5f5; 
+      background: transparent; font-size: .92rem; font-weight: 500; cursor: pointer; 
+      transition: background 0.15s;
+    }
+    .context-sheet .context-options-group button:last-child { border-bottom: none; }
+    .context-sheet button:active { background: rgba(255, 255, 255, 0.06); }
+    .context-sheet button svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .context-sheet button.danger-action { color: var(--danger); }
+    .context-sheet button.cancel-btn {
+      background: var(--surface-elevated); border: 1px solid var(--border);
+      border-radius: 14px; text-align: center; justify-content: center; margin-top: 4px; font-weight: 600;
+    }
+
+    @keyframes viewerEnter { from { opacity:.45; transform:translateX(14px); } to { opacity:1; transform:translateX(0); } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span>Gallery</span>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <input type="text" id="searchInput" class="search-input" placeholder="Search photos, videos, albums..." />
+    <button class="btn icon-btn" id="refreshBtn" title="Rescan">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.65-5.65"></path></svg>
+    </button>
+  </div>
+
+  <div class="toolbar" style="padding-top: 0;">
+    <button class="btn active" data-filter="all">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      All
+    </button>
+    <button class="btn" data-filter="image">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+      Photos
+    </button>
+    <button class="btn" data-filter="video">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+      Videos
+    </button>
+  </div>
+
+  <main id="mainContainer"></main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="timeline">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      All
+    </button>
+    <button class="nav-btn" data-tab="albums">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+      Albums
+    </button>
+  </nav>
+
+  <div id="lightbox" class="lightbox">
+    <div class="lightbox-top">
+      <div id="lbTitle" style="font-weight:600;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+      <button class="btn icon-btn" id="closeLbBtn" style="width: 36px; height: 36px; padding: 0;" title="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="lightbox-body" id="lbBody"></div>
+    <div class="lightbox-meta" id="lbMeta"></div>
+    <div class="viewer-actions">
+      <button id="viewerShare">
+        <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+        Share
+      </button>
+      <button id="viewerInfo">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        Details
+      </button>
+      <button id="viewerDownload">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Save
+      </button>
+      <button id="viewerDelete" class="danger-action">
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        Delete
+      </button>
+    </div>
+  </div>
+
+  <div class="context-menu" id="contextMenu">
+    <div class="context-sheet">
+      <div class="context-sheet-indicator"></div>
+      <h3 id="contextTitle">File options</h3>
+      <div class="context-options-group">
+        <button id="ctxOpen">
+          <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Open Media
+        </button>
+        <button id="ctxShare">
+          <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+          Share File
+        </button>
+        <button id="ctxDownload">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Save / Download
+        </button>
+        <button id="ctxDetails">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          View Details
+        </button>
+        <button id="ctxDelete" class="danger-action">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          Delete File
+        </button>
+      </div>
+      <button id="ctxCancel" class="cancel-btn">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    let mediaItems = [];
+    let currentTab = 'timeline';
+    let currentFilter = 'all';
+    let currentAlbum = null;
+    let searchQuery = '';
+    let viewerItems = [];
+    let viewerIndex = 0;
+    let activeItem = null;
+    let pressTimer = null;
+    let longPressTriggered = false;
+    let pinchStartDistance = 0;
+    let zoomScale = 1;
+    let touchStartX = 0, touchStartY = 0;
+
+    const mainContainer = document.getElementById('mainContainer');
+    const searchInput = document.getElementById('searchInput');
+
+    function loadMediaStore() {
+      if (window.AndroidMediaStore && typeof window.AndroidMediaStore.getAllMediaJson === 'function') {
+        try {
+          const raw = window.AndroidMediaStore.getAllMediaJson();
+          const parsed = JSON.parse(raw);
+          mediaItems = parsed.map(item => ({
+            id: item._id,
+            name: item.display_name || ('Media_' + item._id),
+            album: item.bucket_display_name || 'Internal Storage',
+            mime: item.mime_type || 'image/jpeg',
+            size: item.size || 0,
+            dateAdded: (item.date_added || 0) * 1000,
+            width: item.width || 0,
+            height: item.height || 0,
+            duration: item.duration || 0,
+            path: item.relative_path || 'DCIM/',
+            uri: item.uri,
+            thumbUri: item.thumb_uri || item.uri
+          }));
+        } catch (err) {}
+      }
+      render();
+    }
+
+    function getFilteredItems() {
+      return mediaItems.filter(item => {
+        if (currentAlbum && item.album !== currentAlbum) return false;
+        if (currentFilter === 'image' && !item.mime.startsWith('image')) return false;
+        if (currentFilter === 'video' && !item.mime.startsWith('video')) return false;
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return item.name.toLowerCase().includes(q) || item.album.toLowerCase().includes(q);
+        }
+        return true;
+      });
+    }
+
+    function formatDuration(sec) {
+      if (!sec || sec <= 0) return 'VIDEO';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    function render() {
+      mainContainer.innerHTML = '';
+      const filterToolbar = document.querySelectorAll('.toolbar')[1];
+      if (filterToolbar) filterToolbar.style.display = currentTab === 'albums' ? 'none' : 'flex';
+
+      if (currentTab === 'albums' && !currentAlbum) {
+        const albumsMap = new Map();
+        mediaItems.forEach(item => {
+          if (!albumsMap.has(item.album)) {
+            albumsMap.set(item.album, { count: 0, cover: item.thumbUri });
+          }
+          albumsMap.get(item.album).count++;
+        });
+
+        const grid = document.createElement('div');
+        grid.className = 'albums-grid';
+        albumsMap.forEach((info, albumName) => {
+          const card = document.createElement('div');
+          card.className = 'album-card';
+          card.innerHTML = `
+            <img class="album-cover" src="${info.cover}" loading="lazy" />
+            <div class="album-info">
+              <div class="album-name">${albumName}</div>
+              <div class="album-count">${info.count} items</div>
+            </div>
+          `;
+          card.onclick = () => {
+            currentAlbum = albumName;
+            history.pushState({ albumOpen: albumName }, '');
+            render();
+          };
+          grid.appendChild(card);
+        });
+        mainContainer.appendChild(grid);
+        return;
+      }
+
+      if (currentAlbum) {
+        const backBtn = document.createElement('button');
+        backBtn.className = 'btn';
+        backBtn.style.marginBottom = '12px';
+        backBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Back to Albums (' + currentAlbum + ')';
+        backBtn.onclick = () => { 
+          if (window.history.state && window.history.state.albumOpen) {
+            window.history.back();
+          } else {
+            currentAlbum = null; 
+            render(); 
+          }
+        };
+        mainContainer.appendChild(backBtn);
+      }
+
+      const items = getFilteredItems();
+      if (items.length === 0) {
+        const empty = document.createElement('div');
+        empty.style.padding = '40px 16px';
+        empty.style.textAlign = 'center';
+        empty.style.color = 'var(--text-muted)';
+        empty.textContent = 'No media found.';
+        mainContainer.appendChild(empty);
+        return;
+      }
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const isVideo = item.mime.startsWith('video');
+        card.innerHTML = `
+          <img src="${item.thumbUri}" loading="lazy" alt="${item.name}" />
+          ${isVideo ? `<span class="badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> ${formatDuration(item.duration)}</span>` : ''}
+        `;
+        card.onclick = () => { if (!longPressTriggered) openLightbox(item, items); };
+        card.addEventListener('touchstart', () => { longPressTriggered = false; pressTimer = setTimeout(() => { longPressTriggered = true; showContextMenu(item, items); }, 550); }, {passive:true});
+        ['touchend','touchmove','touchcancel'].forEach(ev => card.addEventListener(ev, () => clearTimeout(pressTimer), {passive:true}));
+        card.addEventListener('contextmenu', e => { e.preventDefault(); showContextMenu(item, items); });
+        grid.appendChild(card);
+      });
+      mainContainer.appendChild(grid);
+    }
+
+    function openLightbox(item, items) {
+      viewerItems = items || getFilteredItems();
+      viewerIndex = Math.max(0, viewerItems.findIndex(x => x.id === item.id));
+      showViewerItem();
+      document.getElementById('lightbox').classList.add('open');
+      history.pushState({ viewerOpen: true }, '');
+    }
+
+    function showViewerItem() {
+      activeItem = viewerItems[viewerIndex];
+      if (!activeItem) return;
+      const lbBody = document.getElementById('lbBody');
+      document.getElementById('lbTitle').textContent = activeItem.name;
+      lbBody.innerHTML = '';
+      zoomScale = 1;
+      const isVideo = activeItem.mime.startsWith('video');
+      const media = document.createElement(isVideo ? 'video' : 'img');
+      media.src = activeItem.uri;
+      if (isVideo) { media.controls = true; media.autoplay = true; }
+      else { media.draggable = false; media.alt = activeItem.name; }
+      media.id = 'viewerMedia';
+      lbBody.appendChild(media);
+      updateDetails();
+      lbBody.style.animation = 'none';
+      void lbBody.offsetWidth;
+      lbBody.style.animation = 'viewerEnter .22s ease';
+    }
+
+    function updateDetails() {
+      if (!activeItem) return;
+      const sizeMb = (activeItem.size / (1024 * 1024)).toFixed(2);
+      document.getElementById('lbMeta').innerHTML = `<div><strong>Album:</strong> ${escapeHtml(activeItem.album)} (${escapeHtml(activeItem.path || 'DCIM/')})</div><div><strong>Type:</strong> ${escapeHtml(activeItem.mime)} • <strong>Size:</strong> ${sizeMb} MB • <strong>Resolution:</strong> ${activeItem.width || '?'} × ${activeItem.height || '?'}</div>`;
+    }
+    function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    
+    function closeViewer() {
+      const body = document.getElementById('lbBody');
+      body.innerHTML = '';
+      document.getElementById('lightbox').classList.remove('open');
+      document.getElementById('lbMeta').style.display = 'none';
+    }
+    document.getElementById('closeLbBtn').onclick = () => {
+      if (window.history.state && window.history.state.viewerOpen) {
+        window.history.back();
+      } else {
+        closeViewer();
+      }
+    };
+
+    window.addEventListener('popstate', (e) => {
+      const lightbox = document.getElementById('lightbox');
+      const contextMenu = document.getElementById('contextMenu');
+      if (contextMenu.classList.contains('open')) {
+        contextMenu.classList.remove('open');
+        return;
+      }
+      if (lightbox.classList.contains('open')) {
+        closeViewer();
+        return;
+      }
+      if (currentAlbum) {
+        currentAlbum = null;
+        render();
+      }
+    });
+
+    function showContextMenu(item, items) {
+      activeItem = item; viewerItems = items || getFilteredItems();
+      viewerIndex = Math.max(0, viewerItems.findIndex(x => x.id === item.id));
+      document.getElementById('contextTitle').textContent = item.name;
+      document.getElementById('contextMenu').classList.add('open');
+      history.pushState({ menuOpen: true }, '');
+    }
+    function closeContextMenu() { 
+      document.getElementById('contextMenu').classList.remove('open'); 
+    }
+    document.getElementById('ctxCancel').onclick = () => {
+      if (window.history.state && window.history.state.menuOpen) {
+        window.history.back();
+      } else {
+        closeContextMenu();
+      }
+    };
+    document.getElementById('contextMenu').addEventListener('click', e => { 
+      if (e.target.id === 'contextMenu') {
+        if (window.history.state && window.history.state.menuOpen) {
+          window.history.back();
+        } else {
+          closeContextMenu();
+        }
+      } 
+    });
+    
+    document.getElementById('ctxOpen').onclick = () => { closeContextMenu(); openLightbox(activeItem, viewerItems); };
+    document.getElementById('ctxShare').onclick = () => { closeContextMenu(); shareItem(activeItem); };
+    document.getElementById('ctxDownload').onclick = () => { closeContextMenu(); downloadItem(activeItem); };
+    document.getElementById('ctxDetails').onclick = () => { const item = activeItem; closeContextMenu(); openLightbox(item, viewerItems); document.getElementById('lbMeta').style.display = 'block'; };
+    document.getElementById('ctxDelete').onclick = () => { closeContextMenu(); deleteItem(activeItem); };
+
+    document.getElementById('viewerShare').onclick = () => shareItem(activeItem);
+    document.getElementById('viewerDownload').onclick = () => downloadItem(activeItem);
+    document.getElementById('viewerInfo').onclick = () => { const meta = document.getElementById('lbMeta'); meta.style.display = meta.style.display === 'block' ? 'none' : 'block'; };
+    document.getElementById('viewerDelete').onclick = () => deleteItem(activeItem);
+
+    // Programmatic file sharing without manual user picking
+    async function shareItem(item) {
+      if (!item) return;
+      // 1. Try Android Native Bridge for background/direct sharing
+      if (window.AndroidMediaStore && typeof window.AndroidMediaStore.shareMedia === 'function') {
+        try {
+          window.AndroidMediaStore.shareMedia(item.id, item.uri);
+          return;
+        } catch (e) {}
+      }
+      // 2. Fallback to Web Share API or download link
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: item.name, url: item.uri });
+        } else {
+          const a = document.createElement('a'); a.href = item.uri; a.download = item.name; a.click();
+        }
+      } catch (e) {}
+    }
+
+    // Programmatic file deletion from local storage without user manually picking files
+    function deleteItem(item) {
+      if (!item) return;
+      if (!confirm(`Are you sure you want to delete "${item.name}"?`)) return;
+
+      let deletedSuccessfully = false;
+
+      // 1. Try Android Native Bridge to execute direct local storage file deletion
+      if (window.AndroidMediaStore && typeof window.AndroidMediaStore.deleteMedia === 'function') {
+        try {
+          const res = window.AndroidMediaStore.deleteMedia(item.id, item.uri);
+          if (res === true || res === "true" || res === undefined) {
+            deletedSuccessfully = true;
+          }
+        } catch (e) {}
+      } else {
+        // Fallback simulation for non-native web environment
+        deletedSuccessfully = true;
+      }
+
+      if (deletedSuccessfully) {
+        // Remove item from global stores and update state
+        mediaItems = mediaItems.filter(x => x.id !== item.id);
+        
+        // Close viewer or context elements if open
+        const lightbox = document.getElementById('lightbox');
+        if (lightbox.classList.contains('open')) {
+          if (viewerItems.length <= 1) {
+            if (window.history.state && window.history.state.viewerOpen) window.history.back();
+            else closeViewer();
+          } else {
+            viewerItems = viewerItems.filter(x => x.id !== item.id);
+            viewerIndex = Math.min(viewerIndex, viewerItems.length - 1);
+            showViewerItem();
+          }
+        }
+        render();
+      } else {
+        alert('Could not delete the file.');
+      }
+    }
+
+    function downloadItem(item) {
+      if (!item) return;
+      const a = document.createElement('a'); a.href = item.uri; a.download = item.name; a.target = '_blank'; document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    const viewerBody = document.getElementById('lbBody');
+    viewerBody.addEventListener('touchstart', e => {
+      if (e.touches.length === 2) { pinchStartDistance = touchDistance(e.touches[0], e.touches[1]); }
+      else if (e.touches.length === 1) { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }
+    }, {passive:true});
+    viewerBody.addEventListener('touchmove', e => {
+      const media = document.getElementById('viewerMedia');
+      if (!media || media.tagName !== 'IMG') return;
+      if (e.touches.length === 2) {
+        const d = touchDistance(e.touches[0], e.touches[1]);
+        if (pinchStartDistance) zoomScale = Math.max(1, Math.min(5, zoomScale * d / pinchStartDistance));
+        pinchStartDistance = d;
+        media.style.transition = 'none'; media.style.transform = `scale(${zoomScale})`;
+      }
+    }, {passive:true});
+    viewerBody.addEventListener('touchend', e => {
+      pinchStartDistance = 0;
+      if (zoomScale === 1 && e.changedTouches.length && Math.abs(e.changedTouches[0].clientX - touchStartX) > 65 && Math.abs(e.changedTouches[0].clientY - touchStartY) < 90) {
+        const dir = e.changedTouches[0].clientX < touchStartX ? 1 : -1;
+        if (viewerIndex + dir >= 0 && viewerIndex + dir < viewerItems.length) { viewerIndex += dir; showViewerItem(); }
+      }
+    }, {passive:true});
+    viewerBody.addEventListener('dblclick', () => { const media = document.getElementById('viewerMedia'); if (media && media.tagName === 'IMG') { zoomScale = zoomScale > 1 ? 1 : 2; media.style.transform = `scale(${zoomScale})`; } });
+    function touchDistance(a,b) { return Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY); }
+
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        render();
+      };
+    });
+
+    document.querySelectorAll('[data-tab]').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentTab = btn.dataset.tab;
+        currentAlbum = null;
+        render();
+      };
+    });
+
+    searchInput.oninput = (e) => {
+      searchQuery = e.target.value;
+      render();
+    };
+
+    document.getElementById('refreshBtn').onclick = () => loadMediaStore();
+
+    window.addEventListener('DOMContentLoaded', loadMediaStore);
+  </script>
+</body>
+</html>
