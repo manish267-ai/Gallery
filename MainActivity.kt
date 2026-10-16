@@ -199,7 +199,7 @@ class MainActivity : Activity() {
             return jsonArray.toString()
         }
 
-        // 🟢 Added delete function wired directly to your JavaScript bridge
+        // 🗑️ Fully equipped delete function with Android security fallback
         @JavascriptInterface
         fun deleteMedia(idString: String): Boolean {
             return try {
@@ -208,6 +208,14 @@ class MainActivity : Activity() {
                     MediaStore.Files.getContentUri("external"), id
                 )
                 contentResolver.delete(contentUri, null, null) > 0
+            } catch (e: android.app.RecoverableSecurityException) {
+                try {
+                    val intentSender = e.userAction.actionIntent.intentSender
+                    startIntentSenderForResult(intentSender, 999, null, 0, 0, 0)
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                }
+                false
             } catch (e: Exception) {
                 e.printStackTrace()
                 false
