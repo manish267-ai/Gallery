@@ -1,4 +1,4 @@
-package com.gallery.app
+package com.example.mediastoregallery
 
 import android.Manifest
 import android.app.Activity
@@ -197,32 +197,6 @@ class MainActivity : Activity() {
                 e.printStackTrace()
             }
             return jsonArray.toString()
-        }
-
-        // 🗑️ Fully corrected delete bridge accepting ID and MIME type for Scoped Storage
-        @JavascriptInterface
-        fun deleteMedia(idString: String, mime: String): Boolean {
-            return try {
-                val id = idString.toLong()
-                val baseUri = if (mime.startsWith("video")) {
-                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-                } else {
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                }
-                val contentUri = ContentUris.withAppendedId(baseUri, id)
-                contentResolver.delete(contentUri, null, null) > 0
-            } catch (e: android.app.RecoverableSecurityException) {
-                try {
-                    val intentSender = e.userAction.actionIntent.intentSender
-                    startIntentSenderForResult(intentSender, 999, null, 0, 0, 0)
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
-                }
-                false
-            } catch (e: Exception) {
-                e.printStackTrace()
-                false
-            }
         }
     }
 }
